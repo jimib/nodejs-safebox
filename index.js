@@ -141,6 +141,11 @@ Safebox.prototype = {
 	_writeContentsToResource  : function(resourceName, data, cb){
 		fs.writeFile(this.getPathToResource(resourceName), data, cb);
 	},
+	_isCurrentResource : function(resourceName, cb){
+		fs.exists(this.getPathToResource(resourceName), function(exists){
+			cb(exists ? "Resource '"+resourceName+"' does not exist" : null);
+		});
+	},
 	addResource : function(resourceName, data, cb){
 		var self = this;
 		
@@ -174,18 +179,22 @@ Safebox.prototype = {
 			if(!valid){
 				cb(err);
 			}else{
-				//update the resource
-				if(data.path){
-					//copy the file contents
-					self._copyContentsToResource(resourceName, data.path, function(err){
+				//ensure the resource exists
+				if(self._isCurrentResource(resourceName, function(err){
+					if(err){
 						cb(err);
-					});
-				}else{
-					//write the contents
-					self._writeContentsToResource(resourceName, data, function(err){
-						cb(err);
-					});
-				}
+					}else if(data.path){
+						//copy the file contents
+						self._copyContentsToResource(resourceName, data.path, function(err){
+							cb(err);
+						});
+					}else{
+						//write the contents
+						self._writeContentsToResource(resourceName, data, function(err){
+							cb(err);
+						});
+					}
+				}));
 			}
 		});
 	},
