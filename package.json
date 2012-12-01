@@ -1,0 +1,9 @@
+{
+	"name": "safebox",
+	"description": "Manage the addition and removal of files to a directory with safebox, ensure names are unique, no overwriting",
+	"version": "0.0.1",
+	"author": {
+		"name": "jimib",
+		"email": "jimi.bailey@gmail.com"
+	}
+}
