@@ -43,8 +43,6 @@ Safebox = module.exports = function(dir, options){
 		err = e.message;
 	}
 	
-	console.log(self.getValidExtensions());
-	
 	if(err)throw new Error(err);
 }
 
@@ -141,9 +139,9 @@ Safebox.prototype = {
 	_writeContentsToResource  : function(resourceName, data, cb){
 		fs.writeFile(this.getPathToResource(resourceName), data, cb);
 	},
-	_isCurrentResource : function(resourceName, cb){
+	_isCurrentResource : function(resourceName, action, cb){
 		fs.exists(this.getPathToResource(resourceName), function(exists){
-			cb(exists ? "Resource '"+resourceName+"' does not exist" : null);
+			cb(exists ? null : "Unable to '"+action+"', resource '"+resourceName+"' does not exist");
 		});
 	},
 	addResource : function(resourceName, data, cb){
@@ -175,17 +173,18 @@ Safebox.prototype = {
 	},
 	updateResource : function(resourceName, data, cb){
 		var self = this;
-		self._validateActionOnResource(resourceName, "update resource", function(err, valid){
+		var action = "update resource";
+		self._validateActionOnResource(resourceName, action, function(err, valid){
 			if(!valid){
 				cb(err);
 			}else{
 				//ensure the resource exists
-				if(self._isCurrentResource(resourceName, function(err){
+				self._isCurrentResource(resourceName, action, function(err){
 					if(err){
 						cb(err);
 					}else if(data.path){
 						//copy the file contents
-						self._copyContentsToResource(resourceName, data.path, function(err){
+						self._copyContentsToResource(resourceName, data.path, function(err){		
 							cb(err);
 						});
 					}else{
@@ -194,19 +193,26 @@ Safebox.prototype = {
 							cb(err);
 						});
 					}
-				}));
+				});
 			}
 		});
 	},
 	removeResource : function(resourceName, cb){
 		//remove the named resource
+		var action = "remove resource";
 		var self = this;
-		self._validateActionOnResource(resourceName, "remove resource", function(err, valid){
+		self._validateActionOnResource(resourceName, action, function(err, valid){
 			if(!valid){
 				cb(err);
 			}else{
-				//update the resource
-				fs.unlink(self.getPathToResource(resourceName), cb);
+				self._isCurrentResource(resourceName, action, function(err){
+					if(err){
+						cb(err);
+					}else{
+						//update the resource
+						fs.unlink(self.getPathToResource(resourceName), cb);
+					}
+				});
 			}
 		});
 	},
