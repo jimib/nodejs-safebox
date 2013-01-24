@@ -1,21 +1,4 @@
-Array.prototype.forEachAsync = function(action, cb){
-	var self = this;
-	var i = - 1;
-	var lim = this.length;
-	
-	next();
-	
-	function next(){
-		if(++i < lim){
-			action(self[i], function(err, result){
-				self[i] = result || self[i];
-				next();
-			});
-		}else{
-			cb();
-		}
-	}
-}
+require("extensions");
 
 var fs = require("fs");
 var path = require("path");
